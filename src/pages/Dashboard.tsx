@@ -339,89 +339,102 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6">
-        {/* Profile Header */}
-        <Card className="overflow-hidden border-primary/20">
-          {/* Cover Image Section */}
-          <div className="relative h-48 sm:h-64 md:h-72 bg-gradient-to-r from-primary/10 to-primary/5">
-            {coverImage ? (
-              <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-primary/10 to-primary/5" />
-            )}
-            <div className="absolute top-4 right-4">
-              <ProfileImageUpload
-                type="cover"
-                currentImage={coverImage}
-                onUploadSuccess={(url) => setCoverImage(url)}
-              />
-            </div>
+      {/* Facebook-style Cover & Profile Section - Full width, no container padding at top */}
+      <div className="w-full">
+        {/* Cover Image - Full width with proper aspect ratio */}
+        <div className="relative w-full h-[180px] sm:h-[240px] md:h-[320px] lg:h-[360px]">
+          {coverImage ? (
+            <img 
+              src={coverImage} 
+              alt="Cover" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+          )}
+          {/* Cover gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          
+          {/* Cover Edit Button */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+            <ProfileImageUpload
+              type="cover"
+              currentImage={coverImage}
+              onUploadSuccess={(url) => setCoverImage(url)}
+            />
           </div>
+        </div>
 
-          {/* User Info Section - Overlapping the cover */}
-          <div className="relative mx-4 sm:mx-6 -mt-16 sm:-mt-20">
-            <div className="bg-card/95 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-background shadow-md">
-                    {profileImage ? (
-                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <AvatarFallback className="bg-primary text-primary-foreground text-2xl sm:text-3xl font-bold">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="absolute bottom-0 right-0">
-                    <ProfileImageUpload
-                      type="profile"
-                      currentImage={profileImage}
-                      onUploadSuccess={(url) => setProfileImage(url)}
-                    />
-                  </div>
-                </div>
+        {/* Profile Section - Overlapping cover like Facebook */}
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-8">
+          <div className="relative flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-4 -mt-16 sm:-mt-20 md:-mt-24">
+            {/* Profile Avatar - Large, overlapping the cover */}
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 border-4 border-background shadow-xl ring-2 ring-border/20">
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <AvatarFallback className="bg-primary text-primary-foreground text-3xl sm:text-4xl md:text-5xl font-bold">
+                    {getUserInitials()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              {/* Profile Edit Button */}
+              <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2">
+                <ProfileImageUpload
+                  type="profile"
+                  currentImage={profileImage}
+                  onUploadSuccess={(url) => setProfileImage(url)}
+                />
+              </div>
+            </div>
 
-                {/* User Info */}
-                <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-                    Welcome back!
-                  </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground mt-1 truncate">{user?.email}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Member since {new Date(stats?.joinedDate || '').toLocaleDateString()}
-                  </p>
-                </div>
+            {/* User Info & Actions - Side by side on desktop */}
+            <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-3 sm:gap-4 pb-2 sm:pb-4 w-full">
+              {/* User Details */}
+              <div className="text-center sm:text-left">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                  Welcome back!
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground mt-0.5 truncate max-w-[250px] sm:max-w-none">
+                  {user?.email}
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground/70 mt-0.5">
+                  Member since {new Date(stats?.joinedDate || '').toLocaleDateString()}
+                </p>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-row gap-2 flex-shrink-0">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => navigate('/profile-settings')} 
-                    className="gap-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span className="hidden sm:inline">Settings</span>
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={handleSignOut}
-                    className="gap-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span className="hidden sm:inline">Sign Out</span>
-                  </Button>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-row gap-2 flex-shrink-0">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/profile-settings')} 
+                  className="gap-2 bg-background/80 backdrop-blur-sm"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span className="hidden sm:inline">Settings</span>
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleSignOut}
+                  className="gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </Button>
               </div>
             </div>
           </div>
 
-          <CardContent className="p-4 sm:p-6 pt-4">
-            {/* Empty - content moved above */}
-          </CardContent>
-        </Card>
+          {/* Divider */}
+          <div className="h-px bg-border/50 mt-4 mb-6" />
+        </div>
+      </div>
+
+      {/* Main Content Area - With proper container padding */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-8 pb-8 space-y-4 sm:space-y-6">
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
