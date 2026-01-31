@@ -58,7 +58,7 @@ function calculateCRC16(data: string): string {
 }
 
 // Generate proper KHQR string following EMV QR Code specification for Bakong
-// Based on KHQR Content Guideline v1.3 from National Bank of Cambodia
+// Based on official ts-khqr and bakong-khqr implementations
 function generateKHQR(params: {
   merchantAccount: string;
   merchantName: string;
@@ -68,6 +68,7 @@ function generateKHQR(params: {
   billNumber: string;
   storeLabel?: string;
   terminalLabel?: string;
+  phoneNumber?: string;
 }) {
   const {
     merchantAccount,
@@ -76,11 +77,12 @@ function generateKHQR(params: {
     amount,
     currency,
     billNumber,
-    storeLabel = 'KHMERZOON',
-    terminalLabel = 'Topup',
+    storeLabel,
+    terminalLabel,
+    phoneNumber,
   } = params;
 
-  // Build the QR string following KHQR specification
+  // Build the QR string following KHQR specification exactly like official SDKs
   let qrString = '';
   
   // 00: Payload Format Indicator - Fixed value "01"
@@ -89,23 +91,16 @@ function generateKHQR(params: {
   // 01: Point of Initiation Method (11 = static, 12 = dynamic QR)
   qrString += formatTLV('01', '12');
   
-  // 29: Merchant Account Information for Solo Merchant/Individual
-  // Sub-tag 00: Global Unique Identifier = Bakong account (e.g., "van_channak@aclb")
-  // This is the correct format per KHQR spec - the Bakong account IS the GUID
+  // 29: Merchant Account Information for Individual/Solo Merchant
+  // Sub-tag 00: Bakong Account ID (the account@bank format)
+  // This matches the format used in official bakong-khqr Python package
   const merchantAccountInfo = formatTLV('00', merchantAccount);
   qrString += formatTLV('29', merchantAccountInfo);
   
-  // 52: Merchant Category Code (5999 = Miscellaneous)
+  // 52: Merchant Category Code (5999 = Miscellaneous and General Merchandise)
   qrString += formatTLV('52', '5999');
   
-  // 53: Transaction Currency (840 = USD, 116 = KHR)
-  const currencyCode = currency === 'USD' ? '840' : '116';
-  qrString += formatTLV('53', currencyCode);
-  
-  // 54: Transaction Amount
-  qrString += formatTLV('54', amount);
-  
-  // 58: Country Code
+  // 58: Country Code - MUST come before currency according to some implementations
   qrString += formatTLV('58', 'KH');
   
   // 59: Merchant Name (max 25 chars)
@@ -116,23 +111,40 @@ function generateKHQR(params: {
   const truncatedCity = merchantCity.substring(0, 15);
   qrString += formatTLV('60', truncatedCity);
   
+  // 99: Timestamp tag - format matches official SDK: "00" + len + timestamp
+  const timestamp = Date.now().toString();
+  qrString += formatTLV('99', formatTLV('00', timestamp));
+  
+  // 54: Transaction Amount (formatted without trailing zeros for whole numbers)
+  const amountNum = parseFloat(amount);
+  const formattedAmount = Number.isInteger(amountNum) ? amountNum.toString() : amountNum.toFixed(2);
+  qrString += formatTLV('54', formattedAmount);
+  
+  // 53: Transaction Currency (840 = USD, 116 = KHR)
+  const currencyCode = currency === 'USD' ? '840' : '116';
+  qrString += formatTLV('53', currencyCode);
+  
   // 62: Additional Data Field Template
   let additionalData = '';
-  // 01: Bill Number (Reference)
-  additionalData += formatTLV('01', billNumber);
-  // 03: Store Label
+  // 01: Bill Number (Reference) - max 25 chars
+  if (billNumber) {
+    additionalData += formatTLV('01', billNumber.substring(0, 25));
+  }
+  // 02: Mobile Number (optional)
+  if (phoneNumber) {
+    additionalData += formatTLV('02', phoneNumber.substring(0, 25));
+  }
+  // 03: Store Label (optional)
   if (storeLabel) {
     additionalData += formatTLV('03', storeLabel.substring(0, 25));
   }
-  // 07: Terminal Label
+  // 07: Terminal Label (optional)
   if (terminalLabel) {
     additionalData += formatTLV('07', terminalLabel.substring(0, 25));
   }
-  qrString += formatTLV('62', additionalData);
-  
-  // 99: Timestamp (optional but recommended for KHQR)
-  const timestamp = Date.now().toString();
-  qrString += formatTLV('99', formatTLV('17', timestamp));
+  if (additionalData) {
+    qrString += formatTLV('62', additionalData);
+  }
   
   // 63: CRC (calculated over the string + "6304")
   qrString += '6304';
