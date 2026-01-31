@@ -342,7 +342,7 @@ const Dashboard = () => {
       {/* Facebook-style Cover & Profile Section - Full width, no container padding at top */}
       <div className="w-full">
         {/* Cover Image - Full width with proper aspect ratio */}
-        <div className="relative w-full h-[180px] sm:h-[240px] md:h-[320px] lg:h-[360px]">
+        <div className="relative w-full h-[216px] sm:h-[288px] md:h-[384px] lg:h-[432px]">
           {coverImage ? (
             <img 
               src={coverImage} 
@@ -353,7 +353,7 @@ const Dashboard = () => {
             <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
           )}
           {/* Cover gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           
           {/* Cover Edit Button */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
