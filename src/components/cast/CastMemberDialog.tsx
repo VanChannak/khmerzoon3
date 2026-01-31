@@ -88,7 +88,7 @@ const CastMemberDialog = ({ castMember, isOpen, onClose }: CastMemberDialogProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         hideCloseButton
-        className="w-[90vw] max-w-md h-[80vh] max-h-[80vh] bg-background/100 border-border flex flex-col z-[70] rounded-lg overflow-hidden backdrop-blur-none"
+        className="w-[90vw] max-w-md h-[80vh] max-h-[80vh] bg-background border-border flex flex-col rounded-lg overflow-hidden"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Cast Member Details</DialogTitle>
