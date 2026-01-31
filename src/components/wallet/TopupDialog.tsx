@@ -319,77 +319,84 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
   const openWithBankApp = async () => {
     if (!qrCode) return;
 
+    // For native apps, use Capacitor Filesystem + Share plugin
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const blob = await generateWatermarkedQRImage();
+        
+        if (!blob) {
+          toast.error('Failed to create QR image');
+          return;
+        }
+
+        // Convert blob to base64 (without data URL prefix for Filesystem)
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            // Remove the data URL prefix to get pure base64
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        
+        const base64Data = await base64Promise;
+        const fileName = `KHQR-Payment-${Date.now()}.png`;
+        
+        // Write file to cache directory
+        const writeResult = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache,
+        });
+        
+        // Share the file using its URI
+        await Share.share({
+          title: `${siteName} KHQR Payment`,
+          text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
+          url: writeResult.uri,
+          dialogTitle: 'Share QR Code with Banking App',
+        });
+        
+        // Clean up the temp file after a delay
+        setTimeout(async () => {
+          try {
+            await Filesystem.deleteFile({
+              path: fileName,
+              directory: Directory.Cache,
+            });
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }, 5000);
+        
+        return;
+      } catch (shareError: any) {
+        console.log('Capacitor Share error:', shareError);
+        
+        // If user cancelled, don't show error
+        if (shareError.message?.includes('cancel') || shareError.message?.includes('dismissed')) {
+          return;
+        }
+        
+        // Fallback to download
+        await downloadQRCode();
+        toast.info('QR Code downloaded. Please share it manually.');
+        return;
+      }
+    }
+
+    // Web fallback - try Web Share API first
     try {
       const blob = await generateWatermarkedQRImage();
-
+      
       if (!blob) {
         toast.error('Failed to create QR image');
         return;
       }
 
-      // For native apps, use Capacitor Filesystem + Share plugin
-      if (Capacitor.isNativePlatform()) {
-        try {
-          // Convert blob to base64 (without data URL prefix for Filesystem)
-          const reader = new FileReader();
-          const base64Promise = new Promise<string>((resolve, reject) => {
-            reader.onloadend = () => {
-              const result = reader.result as string;
-              // Remove the data URL prefix to get pure base64
-              const base64 = result.split(',')[1];
-              resolve(base64);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          
-          const base64Data = await base64Promise;
-          const fileName = `KHQR-Payment-${Date.now()}.png`;
-          
-          // Write file to cache directory
-          const writeResult = await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: Directory.Cache,
-          });
-          
-          // Share the file using its URI
-          await Share.share({
-            title: `${siteName} KHQR Payment`,
-            text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
-            url: writeResult.uri,
-            dialogTitle: 'Share QR Code with Banking App',
-          });
-          
-          // Clean up the temp file after a delay
-          setTimeout(async () => {
-            try {
-              await Filesystem.deleteFile({
-                path: fileName,
-                directory: Directory.Cache,
-              });
-            } catch (e) {
-              // Ignore cleanup errors
-            }
-          }, 5000);
-          
-          return;
-        } catch (shareError: any) {
-          console.log('Capacitor Share error:', shareError);
-          
-          // If user cancelled, don't show error
-          if (shareError.message?.includes('cancel') || shareError.message?.includes('dismissed')) {
-            return;
-          }
-          
-          // Fallback to download
-          await downloadQRCode();
-          toast.info('QR Code downloaded. Please share it manually.');
-          return;
-        }
-      }
-
-      // For web, try Web Share API
       const navAny = navigator as any;
       if (navAny?.share) {
         try {
