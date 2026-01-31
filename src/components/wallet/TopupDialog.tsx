@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,9 @@ import QRCode from 'react-qr-code';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import defaultLogo from '@/assets/khmerzoon.png';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 interface TopupDialogProps {
   open: boolean;
@@ -324,7 +327,54 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
         return;
       }
 
-      // Try Web Share API for native sharing
+      // Check if running on native platform (Capacitor)
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Convert blob to base64
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => {
+              const base64String = reader.result as string;
+              // Remove the data:image/png;base64, prefix
+              resolve(base64String.split(',')[1]);
+            };
+            reader.onerror = reject;
+          });
+          reader.readAsDataURL(blob);
+          const base64Data = await base64Promise;
+
+          // Save file to cache directory
+          const fileName = `${siteName.toUpperCase()}-KHQR-${Date.now()}.png`;
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Cache,
+          });
+
+          // Share the file using native share sheet
+          await Share.share({
+            title: `${siteName} KHQR Payment`,
+            text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
+            url: savedFile.uri,
+            dialogTitle: 'Open with Banking App',
+          });
+
+          return;
+        } catch (nativeError: any) {
+          console.log('Native share error:', nativeError);
+          
+          // If user cancelled, don't show error
+          if (nativeError.message?.includes('cancel') || nativeError.message?.includes('dismiss')) {
+            return;
+          }
+          
+          // Fallback to download
+          await downloadQRCode();
+          return;
+        }
+      }
+
+      // Web fallback: Try Web Share API
       const navAny = navigator as any;
       if (navAny?.share) {
         try {
