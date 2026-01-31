@@ -57,7 +57,8 @@ function calculateCRC16(data: string): string {
   return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
 }
 
-// Generate proper KHQR string following EMV QR Code specification
+// Generate proper KHQR string following EMV QR Code specification for Bakong
+// Based on KHQR Content Guideline v1.3 from National Bank of Cambodia
 function generateKHQR(params: {
   merchantAccount: string;
   merchantName: string;
@@ -79,20 +80,22 @@ function generateKHQR(params: {
     terminalLabel = 'Topup',
   } = params;
 
-  // Build the QR string
+  // Build the QR string following KHQR specification
   let qrString = '';
   
-  // 00: Payload Format Indicator
+  // 00: Payload Format Indicator - Fixed value "01"
   qrString += formatTLV('00', '01');
   
-  // 01: Point of Initiation Method (12 = dynamic QR)
+  // 01: Point of Initiation Method (11 = static, 12 = dynamic QR)
   qrString += formatTLV('01', '12');
   
-  // 29: Merchant Account Information
-  const merchantInfo = formatTLV('00', merchantAccount);
-  qrString += formatTLV('29', merchantInfo);
+  // 29: Merchant Account Information for Solo Merchant/Individual
+  // Sub-tag 00: Global Unique Identifier = Bakong account (e.g., "van_channak@aclb")
+  // This is the correct format per KHQR spec - the Bakong account IS the GUID
+  const merchantAccountInfo = formatTLV('00', merchantAccount);
+  qrString += formatTLV('29', merchantAccountInfo);
   
-  // 52: Merchant Category Code
+  // 52: Merchant Category Code (5999 = Miscellaneous)
   qrString += formatTLV('52', '5999');
   
   // 53: Transaction Currency (840 = USD, 116 = KHR)
@@ -105,22 +108,31 @@ function generateKHQR(params: {
   // 58: Country Code
   qrString += formatTLV('58', 'KH');
   
-  // 59: Merchant Name
-  qrString += formatTLV('59', merchantName);
+  // 59: Merchant Name (max 25 chars)
+  const truncatedName = merchantName.substring(0, 25);
+  qrString += formatTLV('59', truncatedName);
   
-  // 60: Merchant City
-  qrString += formatTLV('60', merchantCity);
+  // 60: Merchant City (max 15 chars)
+  const truncatedCity = merchantCity.substring(0, 15);
+  qrString += formatTLV('60', truncatedCity);
   
   // 62: Additional Data Field Template
   let additionalData = '';
-  additionalData += formatTLV('01', billNumber); // Bill Number
+  // 01: Bill Number (Reference)
+  additionalData += formatTLV('01', billNumber);
+  // 03: Store Label
   if (storeLabel) {
-    additionalData += formatTLV('03', storeLabel); // Store Label
+    additionalData += formatTLV('03', storeLabel.substring(0, 25));
   }
+  // 07: Terminal Label
   if (terminalLabel) {
-    additionalData += formatTLV('07', terminalLabel); // Terminal Label
+    additionalData += formatTLV('07', terminalLabel.substring(0, 25));
   }
   qrString += formatTLV('62', additionalData);
+  
+  // 99: Timestamp (optional but recommended for KHQR)
+  const timestamp = Date.now().toString();
+  qrString += formatTLV('99', formatTLV('17', timestamp));
   
   // 63: CRC (calculated over the string + "6304")
   qrString += '6304';
