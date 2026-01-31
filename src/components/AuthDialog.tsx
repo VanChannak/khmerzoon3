@@ -109,7 +109,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, container }: AuthDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent container={container} className="max-w-[95vw] sm:max-w-md landscape:max-w-[50vw] landscape:md:max-w-[40vw] landscape:max-h-[90vh] max-h-[85vh] overflow-y-auto p-4 sm:p-6 landscape:p-3 landscape:py-4">
+      <DialogContent container={container} className="max-w-[95vw] sm:max-w-md landscape:max-w-[50vw] landscape:md:max-w-[40vw] landscape:max-h-[90vh] max-h-[85vh] overflow-y-auto p-4 sm:p-6 landscape:p-3 landscape:py-4 bg-transparent border-2 border-primary backdrop-blur-none shadow-none">
         <DialogHeader className="landscape:pb-2 pb-3">
           <div className="flex justify-center mb-2 sm:mb-3 landscape:mb-1.5">
             <img 
