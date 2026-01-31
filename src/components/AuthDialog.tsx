@@ -136,7 +136,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, container }: AuthDia
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent !border !border-primary rounded-sm focus:border-primary focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 text-slate-700 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent backdrop-blur-none border-2 border-primary rounded-sm focus:border-primary focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 text-primary placeholder:text-primary/60"
               />
             </div>
             <div className="relative">
@@ -147,7 +147,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, container }: AuthDia
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent !border !border-primary rounded-sm focus:border-primary focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 text-slate-700 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent backdrop-blur-none border-2 border-primary rounded-sm focus:border-primary focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 text-primary placeholder:text-primary/60"
               />
             </div>
           </div>
