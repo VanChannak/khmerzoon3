@@ -419,9 +419,9 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md landscape:max-w-[50vw] landscape:md:max-w-[40vw] landscape:max-h-[90vh] max-h-[85vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
+      <DialogContent className="max-w-[95vw] sm:max-w-[360px] md:max-w-[380px] landscape:max-w-[45vw] landscape:md:max-w-[35vw] landscape:lg:max-w-[320px] landscape:max-h-[90vh] max-h-[85vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
         {/* Transparent glass container */}
-        <div className="bg-background/80 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 landscape:p-3 space-y-4 landscape:space-y-3">
+        <div className="bg-background/80 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 md:p-4 landscape:p-3 space-y-4 md:space-y-3 landscape:space-y-3">
           <DialogHeader className="landscape:pb-1 pb-2">
             <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl landscape:text-base font-bold">
               <Wallet className="h-5 w-5 landscape:h-4 landscape:w-4 text-primary" />
@@ -504,15 +504,15 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
               </Button>
 
               {/* QR Code Display with branding */}
-              <div className="bg-white rounded-xl p-4 landscape:p-3 flex flex-col items-center shadow-lg">
+              <div className="bg-white rounded-xl p-3 sm:p-4 md:p-3 landscape:p-2.5 flex flex-col items-center shadow-lg">
                 {/* Site logo and name above QR */}
-                <div className="flex flex-col items-center mb-3 landscape:mb-2">
+                <div className="flex flex-col items-center mb-2 landscape:mb-1.5">
                   <img 
                     src={currentLogo} 
                     alt={siteName} 
-                    className="w-10 h-10 landscape:w-8 landscape:h-8 object-contain mb-1"
+                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-8 md:h-8 landscape:w-7 landscape:h-7 object-contain mb-0.5"
                   />
-                  <span className="text-[#00bcd4] font-bold text-base landscape:text-sm">{siteName.toUpperCase()}</span>
+                  <span className="text-[#00bcd4] font-bold text-sm sm:text-base md:text-sm landscape:text-xs">{siteName.toUpperCase()}</span>
                 </div>
                 
                 {/* QR Code with centered logo */}
@@ -520,29 +520,29 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
                   <QRCode 
                     id="topup-qr-code" 
                     value={qrCode} 
-                    size={180} 
-                    className="w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] landscape:!w-[120px] landscape:!h-[120px]" 
+                    size={160} 
+                    className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px] md:w-[140px] md:h-[140px] landscape:!w-[100px] landscape:!h-[100px]" 
                   />
                   {/* Centered logo overlay */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white p-1.5 rounded-full">
+                    <div className="bg-white p-1 rounded-full">
                       <img 
                         src={currentLogo} 
                         alt="" 
-                        className="w-8 h-8 landscape:w-6 landscape:h-6 object-contain"
+                        className="w-6 h-6 sm:w-7 sm:h-7 md:w-6 md:h-6 landscape:w-5 landscape:h-5 object-contain"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Payment amount */}
-                <p className="text-black font-bold text-lg landscape:text-base mt-3 landscape:mt-2">
+                <p className="text-black font-bold text-base sm:text-lg md:text-base landscape:text-sm mt-2 landscape:mt-1.5">
                   Scan to Pay ${parseFloat(amount).toFixed(2)}
                 </p>
-                <p className="text-gray-500 text-sm landscape:text-xs">Open in Banking App</p>
+                <p className="text-gray-500 text-xs sm:text-sm md:text-xs landscape:text-[11px]">Open in Banking App</p>
                 
                 {/* Powered by KHQR */}
-                <p className="text-gray-400 text-xs landscape:text-[10px] mt-3 landscape:mt-2">Powered by KHQR</p>
+                <p className="text-gray-400 text-[10px] sm:text-xs md:text-[10px] landscape:text-[9px] mt-2 landscape:mt-1.5">Powered by KHQR</p>
               </div>
 
               {/* Waiting indicator */}
