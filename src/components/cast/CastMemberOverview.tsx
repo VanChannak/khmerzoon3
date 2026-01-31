@@ -27,14 +27,14 @@ const CastMemberOverview = ({
   return (
     <div className="space-y-4">
       {detailedCast && (
-        <div className="bg-card/50 backdrop-blur-md rounded-xl p-4 border border-border">
+        <div className="bg-card rounded-xl p-4 border border-border">
           <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold mb-4 flex items-center gap-2`}>
             <User size={20} className="text-primary" />
             Personal Information
           </h3>
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-4'}`}>
             {detailedCast.birthday && (
-              <div className="flex items-center gap-3 p-3 bg-muted/20 backdrop-blur-sm rounded-lg border border-border/20">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
                 <Calendar size={16} className="text-blue-400 flex-shrink-0" />
                 <div>
                   <div className="text-xs text-muted-foreground">Birthday</div>
@@ -47,7 +47,7 @@ const CastMemberOverview = ({
             )}
             
             {detailedCast.place_of_birth && (
-              <div className="flex items-center gap-3 p-3 bg-muted/20 backdrop-blur-sm rounded-lg border border-border/20">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
                 <MapPin size={16} className="text-green-400 flex-shrink-0" />
                 <div>
                   <div className="text-xs text-muted-foreground">Place of Birth</div>
@@ -57,7 +57,7 @@ const CastMemberOverview = ({
             )}
             
             {detailedCast.known_for_department && (
-              <div className="flex items-center gap-3 p-3 bg-muted/20 backdrop-blur-sm rounded-lg border border-border/20">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
                 <Star size={16} className="text-yellow-400 flex-shrink-0" />
                 <div>
                   <div className="text-xs text-muted-foreground">Known For</div>
@@ -67,7 +67,7 @@ const CastMemberOverview = ({
             )}
             
             {detailedCast.popularity && (
-              <div className="flex items-center gap-3 p-3 bg-muted/20 backdrop-blur-sm rounded-lg border border-border/20">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
                 <Award size={16} className="text-purple-400 flex-shrink-0" />
                 <div>
                   <div className="text-xs text-muted-foreground">Popularity</div>
@@ -80,7 +80,7 @@ const CastMemberOverview = ({
       )}
       
       {detailedCast?.biography && (
-        <div className="bg-card/50 backdrop-blur-md rounded-xl p-4 border border-border">
+        <div className="bg-card rounded-xl p-4 border border-border">
           <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold mb-3`}>Biography</h3>
           <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
             {detailedCast.biography}
