@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Wallet, Loader2, QrCode, ArrowLeft, CheckCircle2, Download, Share2 } from 'lucide-react';
+import { Wallet, Loader2, QrCode, ArrowLeft, CheckCircle2, Download, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,9 +10,6 @@ import QRCode from 'react-qr-code';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import defaultLogo from '@/assets/khmerzoon.png';
-import { Capacitor } from '@capacitor/core';
-import { Share } from '@capacitor/share';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 
 interface TopupDialogProps {
   open: boolean;
@@ -319,92 +316,52 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
   const openWithBankApp = async () => {
     if (!qrCode) return;
 
-    // For native apps, use Capacitor Filesystem + Share plugin
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const blob = await generateWatermarkedQRImage();
-        
-        if (!blob) {
-          toast.error('Failed to create QR image');
-          return;
-        }
-
-        // Convert blob to base64 (without data URL prefix for Filesystem)
-        const base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const result = reader.result as string;
-            resolve(result.split(',')[1]);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-        
-        const fileName = `KHQR-${Date.now()}.png`;
-        
-        // Write file to cache directory
-        const writeResult = await Filesystem.writeFile({
-          path: fileName,
-          data: base64Data,
-          directory: Directory.Cache,
-        });
-        
-        // Share the file - only use url parameter for image sharing
-        await Share.share({
-          url: writeResult.uri,
-          dialogTitle: 'Open with Banking App',
-        });
-        
-        // Clean up temp file after delay
-        setTimeout(async () => {
-          try {
-            await Filesystem.deleteFile({
-              path: fileName,
-              directory: Directory.Cache,
-            });
-          } catch (e) {
-            // Ignore cleanup errors
-          }
-        }, 10000);
-        
-      } catch (shareError: any) {
-        console.log('Native share error:', shareError);
-        // Only show error if it's not a user cancellation
-        if (!shareError.message?.includes('cancel') && !shareError.message?.includes('dismissed') && !shareError.message?.includes('aborted')) {
-          toast.error('Unable to open share menu');
-        }
-      }
-      return;
-    }
-
-    // Web fallback - use Web Share API
     try {
       const blob = await generateWatermarkedQRImage();
-      
+
       if (!blob) {
         toast.error('Failed to create QR image');
         return;
       }
 
-      if (navigator.share) {
-        const file = new File([blob], `KHQR-Payment.png`, { type: 'image/png' });
-        
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
+      // Try Web Share API for native sharing
+      const navAny = navigator as any;
+      if (navAny?.share) {
+        try {
+          const file = new File([blob], `${siteName.toUpperCase()}-KHQR-Payment.png`, { type: 'image/png' });
+          
+          // Check if we can share files
+          if (navAny.canShare && !navAny.canShare({ files: [file] })) {
+            throw new Error('File sharing not supported');
+          }
+
+          await navAny.share({
             files: [file],
-            title: 'KHQR Payment',
+            title: `${siteName} KHQR Payment`,
+            text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
           });
+          
+          return;
+        } catch (shareError: any) {
+          console.log('Share API error:', shareError);
+          
+          // If user cancelled, don't show error
+          if (shareError.name === 'AbortError') {
+            return;
+          }
+          
+          // Fallback: download instead
+          await downloadQRCode();
           return;
         }
       }
+
+      // If share API not available, download automatically
+      await downloadQRCode();
       
-      // Web fallback: show instruction instead of downloading
-      toast.info('Use the Download button, then share from your gallery');
-      
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        toast.info('Use the Download button, then share from your gallery');
-      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      toast.error('Please use Download button instead');
     }
   };
 
@@ -552,7 +509,7 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
                   onClick={openWithBankApp}
                   className="flex-1 h-9 landscape:h-7 text-sm landscape:text-xs gap-1.5 bg-background/50 backdrop-blur-sm border-border/50"
                 >
-                  <Share2 className="w-3.5 h-3.5 landscape:w-3 landscape:h-3" />
+                  <ExternalLink className="w-3.5 h-3.5 landscape:w-3 landscape:h-3" />
                   Open With
                 </Button>
                 <Button
