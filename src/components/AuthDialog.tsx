@@ -129,25 +129,25 @@ export function AuthDialog({ open, onOpenChange, onSuccess, container }: AuthDia
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 landscape:space-y-2 mt-2 sm:mt-4 landscape:mt-2">
           <div className="space-y-3 sm:space-y-4 landscape:space-y-2">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 landscape:h-3.5 landscape:w-3.5 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 landscape:h-3.5 landscape:w-3.5 text-primary" />
               <Input
                 type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent border-primary focus:border-primary focus-visible:ring-primary"
+                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent border border-primary rounded-sm focus:border-primary focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 backdrop-blur-none"
               />
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 landscape:h-3.5 landscape:w-3.5 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 landscape:h-3.5 landscape:w-3.5 text-primary" />
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent border-primary focus:border-primary focus-visible:ring-primary"
+                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent border border-primary rounded-sm focus:border-primary focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 backdrop-blur-none"
               />
             </div>
           </div>
