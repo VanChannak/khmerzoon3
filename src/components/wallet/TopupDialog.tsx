@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Wallet, Loader2, QrCode, ArrowLeft, CheckCircle2, Download, ExternalLink } from 'lucide-react';
+import { Wallet, Loader2, QrCode, ArrowLeft, CheckCircle2, Download, Share2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,6 +10,8 @@ import QRCode from 'react-qr-code';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import defaultLogo from '@/assets/khmerzoon.png';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 
 interface TopupDialogProps {
   open: boolean;
@@ -324,7 +326,44 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
         return;
       }
 
-      // Try Web Share API for native sharing
+      // For native apps, use Capacitor Share plugin
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Convert blob to base64 data URL for Capacitor Share
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          
+          const base64Data = await base64Promise;
+          
+          // Use Capacitor Share to open native share sheet
+          await Share.share({
+            title: `${siteName} KHQR Payment`,
+            text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
+            url: base64Data,
+            dialogTitle: 'Share QR Code with Banking App',
+          });
+          
+          return;
+        } catch (shareError: any) {
+          console.log('Capacitor Share error:', shareError);
+          
+          // If user cancelled, don't show error
+          if (shareError.message?.includes('cancel') || shareError.message?.includes('dismissed')) {
+            return;
+          }
+          
+          // Fallback to download
+          await downloadQRCode();
+          toast.info('QR Code downloaded. Please share it manually.');
+          return;
+        }
+      }
+
+      // For web, try Web Share API
       const navAny = navigator as any;
       if (navAny?.share) {
         try {
@@ -509,7 +548,7 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
                   onClick={openWithBankApp}
                   className="flex-1 h-9 landscape:h-7 text-sm landscape:text-xs gap-1.5 bg-background/50 backdrop-blur-sm border-border/50"
                 >
-                  <ExternalLink className="w-3.5 h-3.5 landscape:w-3 landscape:h-3" />
+                  <Share2 className="w-3.5 h-3.5 landscape:w-3 landscape:h-3" />
                   Open With
                 </Button>
                 <Button
