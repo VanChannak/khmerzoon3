@@ -88,7 +88,7 @@ const CastMemberDialog = ({ castMember, isOpen, onClose }: CastMemberDialogProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         hideCloseButton
-        className="w-[90vw] max-w-md h-[80vh] max-h-[80vh] bg-background border-border flex flex-col z-[70] rounded-lg overflow-hidden"
+        className="w-[90vw] max-w-md h-[80vh] max-h-[80vh] bg-background/100 border-border flex flex-col z-[70] rounded-lg overflow-hidden backdrop-blur-none"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Cast Member Details</DialogTitle>
@@ -105,7 +105,7 @@ const CastMemberDialog = ({ castMember, isOpen, onClose }: CastMemberDialogProps
           <X className="h-4 w-4" />
         </Button>
         
-        <div className="flex-shrink-0 bg-gradient-to-b from-card/80 to-background border-b border-border p-3 pt-10 pr-12">
+        <div className="flex-shrink-0 bg-card border-b border-border p-3 pt-10 pr-12">
           <CastMemberProfile
             castMember={profileCastMember}
             isFollowing={isFollowing}
