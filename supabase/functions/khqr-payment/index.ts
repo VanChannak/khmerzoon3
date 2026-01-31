@@ -276,14 +276,21 @@ serve(async (req) => {
         preview: qrData.substring(0, 50) + '...'
       });
 
-      // Update payment_transactions with QR code data
-      await supabase
+      // Update payment_transactions with QR code data using admin client to ensure it succeeds
+      const { error: updateError } = await supabaseAdmin
         .from('payment_transactions')
         .update({
           qr_code_data: qrData,
           md_hash: md5Hash,
         })
         .eq('id', transaction.id);
+
+      if (updateError) {
+        console.error('Error updating transaction with QR data:', updateError);
+        throw new Error('Failed to save QR code data');
+      }
+
+      console.log('Transaction updated successfully with md_hash:', md5Hash);
 
       // Also store in payments table for Bakong tracking
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
