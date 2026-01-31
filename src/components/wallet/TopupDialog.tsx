@@ -12,6 +12,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import defaultLogo from '@/assets/khmerzoon.png';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 interface TopupDialogProps {
   open: boolean;
@@ -326,26 +327,51 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
         return;
       }
 
-      // For native apps, use Capacitor Share plugin
+      // For native apps, use Capacitor Filesystem + Share plugin
       if (Capacitor.isNativePlatform()) {
         try {
-          // Convert blob to base64 data URL for Capacitor Share
+          // Convert blob to base64 (without data URL prefix for Filesystem)
           const reader = new FileReader();
           const base64Promise = new Promise<string>((resolve, reject) => {
-            reader.onloadend = () => resolve(reader.result as string);
+            reader.onloadend = () => {
+              const result = reader.result as string;
+              // Remove the data URL prefix to get pure base64
+              const base64 = result.split(',')[1];
+              resolve(base64);
+            };
             reader.onerror = reject;
             reader.readAsDataURL(blob);
           });
           
           const base64Data = await base64Promise;
+          const fileName = `KHQR-Payment-${Date.now()}.png`;
           
-          // Use Capacitor Share to open native share sheet
+          // Write file to cache directory
+          const writeResult = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Cache,
+          });
+          
+          // Share the file using its URI
           await Share.share({
             title: `${siteName} KHQR Payment`,
             text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
-            url: base64Data,
+            url: writeResult.uri,
             dialogTitle: 'Share QR Code with Banking App',
           });
+          
+          // Clean up the temp file after a delay
+          setTimeout(async () => {
+            try {
+              await Filesystem.deleteFile({
+                path: fileName,
+                directory: Directory.Cache,
+              });
+            } catch (e) {
+              // Ignore cleanup errors
+            }
+          }, 5000);
           
           return;
         } catch (shareError: any) {
