@@ -33,7 +33,7 @@ const CastMemberFilmography = ({ movieCredits, tvCredits, isMobile }: CastMember
 
   return (
     <div className="space-y-4 h-full flex flex-col">
-      <div className="bg-card rounded-xl p-3 border border-border flex-shrink-0">
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl p-3 border border-border flex-shrink-0">
         <div className="flex gap-2">
             <button
               onClick={() => setSelectedType("all")}
@@ -83,7 +83,7 @@ const CastMemberFilmography = ({ movieCredits, tvCredits, isMobile }: CastMember
                 {filteredCredits.map((credit) => (
                   <div 
                     key={credit.id} 
-                    className="bg-card rounded-xl hover:bg-accent transition-all duration-300 border border-border group cursor-pointer overflow-hidden hover:scale-105"
+                    className="bg-card/50 backdrop-blur-sm rounded-xl hover:bg-card/80 transition-all duration-300 border border-border group cursor-pointer overflow-hidden hover:scale-105"
                   >
                     <div className="aspect-[2/3.45] w-full rounded-t-xl overflow-hidden bg-muted shadow-lg relative">
                       {credit.poster_path ? (

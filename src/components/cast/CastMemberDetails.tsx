@@ -68,7 +68,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="bg-card rounded-xl p-4 border border-border">
+        <div className="bg-gray-800/20 backdrop-blur-md rounded-xl p-4 border border-gray-700/30">
           <div className="h-6 w-48 bg-gray-700/50 rounded animate-pulse mb-4" />
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => (
@@ -94,14 +94,14 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
 
   return (
     <div className="space-y-4 pb-6">
-      <div className="bg-card rounded-xl p-4 border border-border">
+      <div className="bg-gray-800/20 backdrop-blur-md rounded-xl p-4 border border-gray-700/30">
         <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold mb-4 flex items-center gap-2 text-white`}>
           <Users size={20} className="text-cyan-500" />
           Personal Information
         </h3>
         <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-4'}`}>
           {tmdbPerson.known_for_department && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 p-3 bg-gray-700/20 rounded-lg border border-gray-600/20">
               <Award size={16} className="text-yellow-400 flex-shrink-0" />
               <div>
                 <span className="text-gray-400 text-xs block">Known For</span>
@@ -111,7 +111,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
           )}
           
           {tmdbPerson.birthday && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 p-3 bg-gray-700/20 rounded-lg border border-gray-600/20">
               <Calendar size={16} className="text-blue-400 flex-shrink-0" />
               <div>
                 <span className="text-gray-400 text-xs block">Birthday</span>
@@ -124,7 +124,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
           )}
           
           {tmdbPerson.place_of_birth && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 p-3 bg-gray-700/20 rounded-lg border border-gray-600/20">
               <MapPin size={16} className="text-green-400 flex-shrink-0" />
               <div>
                 <span className="text-gray-400 text-xs block">Place of Birth</span>
@@ -133,7 +133,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
             </div>
           )}
           
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
+          <div className="flex items-center gap-3 p-3 bg-gray-700/20 rounded-lg border border-gray-600/20">
             <User size={16} className="text-purple-400 flex-shrink-0" />
             <div>
               <span className="text-gray-400 text-xs block">Gender</span>
@@ -142,7 +142,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
           </div>
 
           {tmdbPerson.popularity > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 p-3 bg-gray-700/20 rounded-lg border border-gray-600/20">
               <Star size={16} className="text-pink-400 flex-shrink-0" />
               <div>
                 <span className="text-gray-400 text-xs block">Popularity Score</span>
@@ -152,7 +152,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
           )}
 
           {careerSpan && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 p-3 bg-gray-700/20 rounded-lg border border-gray-600/20">
               <Clock size={16} className="text-indigo-400 flex-shrink-0" />
               <div>
                 <span className="text-gray-400 text-xs block">Career Span</span>
@@ -167,7 +167,7 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
       </div>
       
       {tmdbPerson.homepage && (
-        <div className="bg-card rounded-xl p-4 border border-border">
+        <div className="bg-gray-800/20 backdrop-blur-md rounded-xl p-4 border border-gray-700/30">
           <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold mb-4 flex items-center gap-2 text-white`}>
             <ExternalLink size={20} className="text-cyan-500" />
             External Links
@@ -186,29 +186,29 @@ const CastMemberDetails = ({ castMember, tmdbPerson, movieCredits, tvCredits, is
         </div>
       )}
       
-      <div className="bg-card rounded-xl p-4 border border-border">
+      <div className="bg-gray-800/20 backdrop-blur-md rounded-xl p-4 border border-gray-700/30">
         <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold mb-4 flex items-center gap-2 text-white`}>
           <Clock size={20} className="text-cyan-500" />
           Career Statistics
         </h3>
         <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-4 gap-4'}`}>
-          <div className="text-center p-4 bg-muted rounded-lg border border-border/50">
+          <div className="text-center p-4 bg-gray-700/20 rounded-lg border border-gray-600/20">
             <Film size={20} className="mx-auto mb-2 text-blue-400" />
             <p className="text-2xl font-bold text-blue-400 mb-1">{movieCredits.length}</p>
             <p className="text-xs font-medium text-gray-400">Movies</p>
           </div>
-          <div className="text-center p-4 bg-muted rounded-lg border border-border/50">
+          <div className="text-center p-4 bg-gray-700/20 rounded-lg border border-gray-600/20">
             <Tv size={20} className="mx-auto mb-2 text-purple-400" />
             <p className="text-2xl font-bold text-purple-400 mb-1">{tvCredits.length}</p>
             <p className="text-xs font-medium text-gray-400">TV Shows</p>
           </div>
-          <div className="text-center p-4 bg-muted rounded-lg border border-border/50">
+          <div className="text-center p-4 bg-gray-700/20 rounded-lg border border-gray-600/20">
             <Star size={20} className="mx-auto mb-2 text-yellow-400" />
             <p className="text-2xl font-bold text-yellow-400 mb-1">{allCredits.length}</p>
             <p className="text-xs font-medium text-gray-400">Total Credits</p>
           </div>
           {tmdbPerson.popularity > 0 && (
-            <div className="text-center p-4 bg-muted rounded-lg border border-border/50">
+            <div className="text-center p-4 bg-gray-700/20 rounded-lg border border-gray-600/20">
               <Users size={20} className="mx-auto mb-2 text-green-400" />
               <p className="text-2xl font-bold text-green-400 mb-1">{Math.round(tmdbPerson.popularity)}</p>
               <p className="text-xs font-medium text-gray-400">Popularity</p>
