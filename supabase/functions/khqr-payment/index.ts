@@ -240,13 +240,8 @@ serve(async (req) => {
       const billNumber = transaction.id.substring(0, 20);
       const amountStr = parseFloat(amount).toFixed(2);
       
-      // Extract and validate merchant name from account
-      const merchantNameParts = merchantAccount.split('@');
-      if (merchantNameParts.length < 2) {
-        throw new Error('Invalid merchant account format. Expected format: name@bank');
-      }
-      
-      const merchantName = merchantNameParts[0].replace(/_/g, ' ').toUpperCase();
+      // Use business name for display instead of personal account name
+      const merchantName = 'KHMERZOON';
       
       console.log('Generating KHQR with:', {
         merchantAccount,
