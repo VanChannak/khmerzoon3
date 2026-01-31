@@ -269,7 +269,8 @@ const CastMemberDialog = ({ castMember, isOpen, onClose, castType }: CastMemberD
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
-        className="w-[90vw] max-w-md h-[80vh] max-h-[80vh] p-0 bg-background/40 backdrop-blur-sm text-foreground overflow-hidden flex flex-col z-[70] rounded-lg [&>button.absolute]:hidden"
+        hideCloseButton
+        className="w-[90vw] max-w-md h-[80vh] max-h-[80vh] p-0 bg-background border-border text-foreground overflow-hidden flex flex-col rounded-lg"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Cast Member Details</DialogTitle>
@@ -285,7 +286,7 @@ const CastMemberDialog = ({ castMember, isOpen, onClose, castType }: CastMemberD
         </button>
         
         {/* Profile Header */}
-        <div className="flex-shrink-0 bg-gradient-to-b from-card/80 to-background border-b border-border pt-10">
+        <div className="flex-shrink-0 bg-card border-b border-border pt-10">
           <div className="p-3 pr-12">
             <div className="flex flex-row items-start gap-3">
               {/* Profile Image */}
