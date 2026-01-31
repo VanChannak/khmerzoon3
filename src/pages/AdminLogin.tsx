@@ -118,7 +118,7 @@ const AdminLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 h-11 bg-background"
+                  className="pl-10 h-11 bg-transparent border-primary focus:border-primary focus-visible:ring-primary"
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ const AdminLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 h-11 bg-background"
+                  className="pl-10 h-11 bg-transparent border-primary focus:border-primary focus-visible:ring-primary"
                 />
               </div>
             </div>

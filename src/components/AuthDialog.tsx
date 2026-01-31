@@ -136,7 +136,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, container }: AuthDia
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm"
+                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent border-primary focus:border-primary focus-visible:ring-primary"
               />
             </div>
             <div className="relative">
@@ -147,7 +147,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, container }: AuthDia
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm"
+                className="pl-10 h-11 sm:h-12 landscape:h-9 text-base landscape:text-sm bg-transparent border-primary focus:border-primary focus-visible:ring-primary"
               />
             </div>
           </div>
