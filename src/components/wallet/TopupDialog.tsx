@@ -330,20 +330,17 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
         }
 
         // Convert blob to base64 (without data URL prefix for Filesystem)
-        const reader = new FileReader();
-        const base64Promise = new Promise<string>((resolve, reject) => {
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
           reader.onloadend = () => {
             const result = reader.result as string;
-            // Remove the data URL prefix to get pure base64
-            const base64 = result.split(',')[1];
-            resolve(base64);
+            resolve(result.split(',')[1]);
           };
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
         
-        const base64Data = await base64Promise;
-        const fileName = `KHQR-Payment-${Date.now()}.png`;
+        const fileName = `KHQR-${Date.now()}.png`;
         
         // Write file to cache directory
         const writeResult = await Filesystem.writeFile({
@@ -352,15 +349,13 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
           directory: Directory.Cache,
         });
         
-        // Share the file using its URI
+        // Share the file - only use url parameter for image sharing
         await Share.share({
-          title: `${siteName} KHQR Payment`,
-          text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
           url: writeResult.uri,
-          dialogTitle: 'Share QR Code with Banking App',
+          dialogTitle: 'Open with Banking App',
         });
         
-        // Clean up the temp file after a delay
+        // Clean up temp file after delay
         setTimeout(async () => {
           try {
             await Filesystem.deleteFile({
@@ -370,25 +365,19 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
           } catch (e) {
             // Ignore cleanup errors
           }
-        }, 5000);
+        }, 10000);
         
-        return;
       } catch (shareError: any) {
-        console.log('Capacitor Share error:', shareError);
-        
-        // If user cancelled, don't show error
-        if (shareError.message?.includes('cancel') || shareError.message?.includes('dismissed')) {
-          return;
+        console.log('Native share error:', shareError);
+        // Only show error if it's not a user cancellation
+        if (!shareError.message?.includes('cancel') && !shareError.message?.includes('dismissed') && !shareError.message?.includes('aborted')) {
+          toast.error('Unable to open share menu');
         }
-        
-        // Fallback to download
-        await downloadQRCode();
-        toast.info('QR Code downloaded. Please share it manually.');
-        return;
       }
+      return;
     }
 
-    // Web fallback - try Web Share API first
+    // Web fallback - use Web Share API
     try {
       const blob = await generateWatermarkedQRImage();
       
@@ -397,43 +386,25 @@ export const TopupDialog = ({ open, onOpenChange, onSuccess, requiredAmount }: T
         return;
       }
 
-      const navAny = navigator as any;
-      if (navAny?.share) {
-        try {
-          const file = new File([blob], `${siteName.toUpperCase()}-KHQR-Payment.png`, { type: 'image/png' });
-          
-          // Check if we can share files
-          if (navAny.canShare && !navAny.canShare({ files: [file] })) {
-            throw new Error('File sharing not supported');
-          }
-
-          await navAny.share({
+      if (navigator.share) {
+        const file = new File([blob], `KHQR-Payment.png`, { type: 'image/png' });
+        
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
             files: [file],
-            title: `${siteName} KHQR Payment`,
-            text: `Scan to pay $${parseFloat(amount).toFixed(2)} - Open in your banking app`,
+            title: 'KHQR Payment',
           });
-          
-          return;
-        } catch (shareError: any) {
-          console.log('Share API error:', shareError);
-          
-          // If user cancelled, don't show error
-          if (shareError.name === 'AbortError') {
-            return;
-          }
-          
-          // Fallback: download instead
-          await downloadQRCode();
           return;
         }
       }
-
-      // If share API not available, download automatically
-      await downloadQRCode();
       
-    } catch (error) {
-      console.error('Error sharing:', error);
-      toast.error('Please use Download button instead');
+      // Web fallback: show instruction instead of downloading
+      toast.info('Use the Download button, then share from your gallery');
+      
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        toast.info('Use the Download button, then share from your gallery');
+      }
     }
   };
 
