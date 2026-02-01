@@ -338,8 +338,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Facebook-style Cover & Profile Section - Full width, no container padding at top */}
+    <div className="min-h-screen bg-background pt-14">
+      {/* Facebook-style Cover & Profile Section - Full width, below header */}
       <div className="w-full">
         {/* Cover Image - Full width with proper aspect ratio */}
         <div className="relative w-full h-[216px] sm:h-[288px] md:h-[384px] lg:h-[432px]">

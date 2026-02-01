@@ -44,14 +44,22 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
     try {
       setUploading(true);
 
-      // Generate unique filename
-      const timestamp = Date.now();
+      // Generate unique filename with consistent naming for overwrite
       const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
+      const fileName = `${user.id}/${type}.${fileExt}`;
 
-      // Upload to Supabase storage (profiles bucket)
-      const { error: uploadError, data } = await supabase.storage
-        .from('profiles')
+      // Delete existing file if any (to avoid stale cache)
+      try {
+        await supabase.storage
+          .from('avatars')
+          .remove([fileName]);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+
+      // Upload to Supabase storage (avatars bucket - which exists)
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
         .upload(fileName, selectedFile, {
           cacheControl: '3600',
           upsert: true
@@ -59,28 +67,35 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
+      // Get public URL with cache buster
       const { data: { publicUrl } } = supabase.storage
-        .from('profiles')
+        .from('avatars')
         .getPublicUrl(fileName);
+
+      // Add cache buster to avoid stale images
+      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
 
       // Update profile in database
       const column = type === 'profile' ? 'profile_image' : 'cover_image';
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ [column]: publicUrl })
+        .update({ [column]: urlWithCacheBuster })
         .eq('id', user.id);
 
       if (updateError) throw updateError;
 
-      onUploadSuccess(publicUrl);
+      onUploadSuccess(urlWithCacheBuster);
       setIsDialogOpen(false);
       setSelectedFile(null);
       setPreviewUrl('');
       toast.success(`${type === 'profile' ? 'Profile' : 'Cover'} image updated successfully`);
-    } catch (error) {
-      toast.error('Upload failed');
+    } catch (error: any) {
       console.error('Upload error:', error);
+      if (error?.message?.includes('Bucket not found')) {
+        toast.error('Storage not configured. Please set up avatars bucket in Supabase.');
+      } else {
+        toast.error('Upload failed. Please try again.');
+      }
     } finally {
       setUploading(false);
     }
