@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 // @ts-ignore
 import shaka from 'shaka-player/dist/shaka-player.compiled';
+import { videoRequestCache } from '@/lib/videoRequestCache';
 
 interface NativeShakaConfig {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -11,10 +12,10 @@ interface NativeShakaConfig {
   onAudioTracksLoaded?: (tracks: any[]) => void;
   onTextTracksLoaded?: (tracks: any[]) => void;
   onBandwidthUpdate?: (bandwidth: number) => void;
-  // NOTE: Shaka throws/dispatches shaka.util.Error (has severity/category/code/data).
-  // We accept unknown here so callers can inspect full Shaka error details.
   onError?: (error: unknown) => void;
   onLoaded?: () => void;
+  /** Enable network request caching for MP4 progressive download */
+  enableCaching?: boolean;
 }
 
 // Debug logging helper
@@ -73,6 +74,20 @@ function getNetworkQuality(): { type: string; downlink: number; effectiveType: s
  * Optimized Shaka Player hook for native Capacitor apps
  * Provides better buffering, reduced battery drain, and smoother playback
  */
+/**
+ * MP4 Progressive Download Optimization Constants
+ */
+const MP4_OPTIMIZATION = {
+  // Initial buffer to download before playback (in seconds)
+  initialBufferSeconds: 2,
+  // Aggressive range request size for faster initial load (512KB)
+  initialRangeSize: 512 * 1024,
+  // Enable preloading of next chunk while playing
+  enablePreloading: true,
+  // Preload ahead buffer (in seconds)  
+  preloadAheadSeconds: 30,
+};
+
 export function useNativeShakaPlayer({
   videoRef,
   autoQualityEnabled = true,
@@ -83,9 +98,11 @@ export function useNativeShakaPlayer({
   onBandwidthUpdate,
   onError,
   onLoaded,
+  enableCaching = true,
 }: NativeShakaConfig) {
   const shakaPlayerRef = useRef<shaka.Player | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const cachingEnabledRef = useRef(enableCaching);
   const [isLoading, setIsLoading] = useState(false);
   
   const isNative = Capacitor.isNativePlatform();
@@ -511,33 +528,74 @@ export function useNativeShakaPlayer({
 
       let finalMimeType = mimeType;
       
-      // For MP4 files, use native video element directly for better performance
+      // For MP4 files, use optimized progressive download configuration
       if (detectedType === 'mp4' && videoRef.current) {
-        logDebug('loadSource', 'Using native playback for MP4');
+        logDebug('loadSource', 'Using optimized MP4 progressive download config');
         
-        // Configure player for progressive MP4
+        // Preload initial bytes for faster start
+        if (cachingEnabledRef.current) {
+          videoRequestCache.preloadMp4Start(url, MP4_OPTIMIZATION.initialRangeSize).catch(() => {});
+        }
+        
+        // Configure player for optimized progressive MP4 download
         player.configure({
           streaming: {
-            // Smaller buffer for MP4 since it's progressive download
-            bufferingGoal: 15,
-            rebufferingGoal: 2,
-            bufferBehind: 30,
-            // Faster segment fetch for MP4
+            // Aggressive buffering for smooth playback
+            bufferingGoal: MP4_OPTIMIZATION.preloadAheadSeconds, // Buffer 30s ahead
+            rebufferingGoal: MP4_OPTIMIZATION.initialBufferSeconds, // Quick initial buffer
+            bufferBehind: 60, // Keep 60s behind for seeking back
+            // Optimized retry for range requests
             retryParameters: {
-              maxAttempts: 5,
-              baseDelay: 100,
+              maxAttempts: 4,
+              baseDelay: 50, // Faster retry
               backoffFactor: 1.2,
-              timeout: 20000,
-              fuzzFactor: 0.2,
+              timeout: 15000, // 15s timeout
+              connectionTimeout: 5000, // 5s connection timeout
+              stallTimeout: 3000, // 3s stall timeout
+              fuzzFactor: 0.1,
             },
-            // Jump gaps for smoother playback
+            // Gap handling for progressive download
             jumpLargeGaps: true,
-            smallGapLimit: 0.5,
+            smallGapLimit: 0.3,
             stallEnabled: true,
-            stallThreshold: 0.5,
-            stallSkip: 0.2,
+            stallThreshold: 0.3,
+            stallSkip: 0.1,
+            // Disable segment prefetch (not needed for progressive MP4)
+            segmentPrefetchLimit: 0,
+            // Start playback immediately
+            startAtSegmentBoundary: false,
+            // Fast seek
+            safeSeekOffset: 0,
+            gapDetectionThreshold: 0.2,
+            // Don't wait for full segment
+            durationBackoff: 0,
+            // Auto low latency off for VOD
+            autoLowLatencyMode: false,
+            lowLatencyMode: false,
+          },
+          abr: {
+            // Disable ABR for MP4 (single quality)
+            enabled: false,
+            defaultBandwidthEstimate: estimatedBandwidth,
+          },
+          manifest: {
+            retryParameters: {
+              maxAttempts: 3,
+              baseDelay: 50,
+              backoffFactor: 1.2,
+              timeout: 8000,
+              fuzzFactor: 0.1,
+            },
           },
         });
+        
+        // Optimize video element for progressive download
+        videoRef.current.preload = 'auto';
+        videoRef.current.defaultPlaybackRate = 1.0;
+        
+        // Hardware acceleration hints
+        videoRef.current.style.transform = 'translateZ(0)';
+        videoRef.current.style.willChange = 'transform';
         
         // Load MP4 directly without mime type for native handling
         finalMimeType = undefined;
@@ -736,6 +794,20 @@ export function useNativeShakaPlayer({
     return shakaPlayerRef.current.getStats();
   }, []);
 
+  // Get cache statistics for debugging
+  const getCacheStats = useCallback(() => {
+    return videoRequestCache.getStats();
+  }, []);
+
+  // Clear video cache for specific URL or all
+  const clearCache = useCallback((url?: string) => {
+    if (url) {
+      videoRequestCache.clearUrl(url);
+    } else {
+      videoRequestCache.clearAll();
+    }
+  }, []);
+
   // Cleanup on unmount
   const cleanup = useCallback(async () => {
     if (shakaPlayerRef.current) {
@@ -772,15 +844,17 @@ export function useNativeShakaPlayer({
     setAudioTrack,
     setTextTrack,
     getStats,
+    getCacheStats,
+    clearCache,
     cleanup,
     getNativeConfig,
   };
 }
 
 /**
- * Get optimized video element attributes for native apps
+ * Get optimized video element attributes for native apps and MP4 playback
  */
-export function getNativeVideoAttributes() {
+export function getNativeVideoAttributes(forMp4 = false) {
   const isNative = Capacitor.isNativePlatform();
   const platform = Capacitor.getPlatform();
 
@@ -791,26 +865,27 @@ export function getNativeVideoAttributes() {
     'webkit-playsinline': 'true',
     // Allow AirPlay on iOS
     'x-webkit-airplay': 'allow',
-    // Preload metadata for faster start
-    preload: isNative ? 'metadata' : 'auto',
+    // Preload: 'auto' for MP4 (aggressive), 'metadata' for streams
+    preload: forMp4 ? 'auto' : (isNative ? 'metadata' : 'auto'),
     // Cross-origin for CORS
     crossOrigin: 'anonymous' as const,
-    // Disable picture-in-picture if needed
-    // disablePictureInPicture: false,
     // iOS-specific: allow background audio
     ...(platform === 'ios' ? {
       'x-webkit-wirelessvideoplaybackdisabled': 'false',
     } : {}),
-    // Android-specific optimizations
-    ...(platform === 'android' ? {
-      // Hardware acceleration hints
-      style: {
-        transform: 'translateZ(0)',
-        willChange: 'transform',
-      },
-    } : {}),
+    // Hardware acceleration hints for both platforms
+    style: {
+      transform: 'translateZ(0)',
+      willChange: 'transform',
+      // Improve rendering performance
+      backfaceVisibility: 'hidden' as const,
+      perspective: 1000,
+    },
   };
 }
+
+// Re-export cache utilities for external use
+export { videoRequestCache };
 
 /**
  * Check if device can handle high quality video
