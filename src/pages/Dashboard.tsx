@@ -357,15 +357,15 @@ const Dashboard = () => {
           )}
           {/* Cover gradient overlay - 50% from bottom for readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 25%, transparent 50%)' }} />
-        </div>
-        
-        {/* Cover Edit Button - positioned at bottom right corner of cover section */}
-        <div className="absolute bottom-20 sm:bottom-24 md:bottom-28 right-4 sm:right-6 z-[60]">
-          <ProfileImageUpload
-            type="cover"
-            currentImage={coverImage}
-            onUploadSuccess={(url) => setCoverImage(`${url}?t=${Date.now()}`)}
-          />
+          
+          {/* Cover Edit Button - INSIDE cover container, positioned at bottom right */}
+          <div className="absolute bottom-4 right-4 sm:right-6 z-[60]">
+            <ProfileImageUpload
+              type="cover"
+              currentImage={coverImage}
+              onUploadSuccess={(url) => setCoverImage(`${url}?t=${Date.now()}`)}
+            />
+          </div>
         </div>
 
         {/* Profile Section - Overlapping cover like Facebook */}
