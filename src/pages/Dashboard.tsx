@@ -338,29 +338,29 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-14">
-      {/* Facebook-style Cover & Profile Section - Full width, below header */}
+    <div className="min-h-screen bg-background">
+      {/* Facebook-style Cover & Profile Section - Full width, extends behind header */}
       <div className="w-full">
-        {/* Cover Image - Reduced height, positioned below header */}
-        <div className="relative w-full h-[140px] sm:h-[180px] md:h-[240px] lg:h-[280px]">
+        {/* Cover Image - 16:9 aspect ratio, fills behind transparent header */}
+        <div className="relative w-full aspect-[16/9] max-h-[50vh]">
           {coverImage ? (
             <img 
-              src={coverImage} 
+              src={`${coverImage}${coverImage.includes('?') ? '&' : '?'}t=${Date.now()}`}
               alt="Cover" 
               className="w-full h-full object-cover object-center"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/30 via-primary/15 to-background" />
+            <div className="w-full h-full bg-gradient-to-br from-primary/40 via-primary/20 to-background" />
           )}
-          {/* Cover gradient overlay for better text readability - stronger opacity */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent opacity-80" />
+          {/* Cover gradient overlay - 50% from bottom for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 25%, transparent 50%)' }} />
           
           {/* Cover Edit Button - positioned 15px from bottom */}
-          <div className="absolute bottom-[15px] right-3 sm:right-4">
+          <div className="absolute bottom-[15px] right-3 sm:right-4 z-10">
             <ProfileImageUpload
               type="cover"
               currentImage={coverImage}
-              onUploadSuccess={(url) => setCoverImage(url)}
+              onUploadSuccess={(url) => setCoverImage(`${url}?t=${Date.now()}`)}
             />
           </div>
         </div>
@@ -372,7 +372,7 @@ const Dashboard = () => {
             <div className="relative flex-shrink-0">
               <Avatar className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 border-4 border-background shadow-xl ring-2 ring-border/20">
                 {profileImage ? (
-                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={`${profileImage}${profileImage.includes('?') ? '&' : '?'}t=${Date.now()}`} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <AvatarFallback className="bg-primary text-primary-foreground text-3xl sm:text-4xl md:text-5xl font-bold">
                     {getUserInitials()}
@@ -384,7 +384,7 @@ const Dashboard = () => {
                 <ProfileImageUpload
                   type="profile"
                   currentImage={profileImage}
-                  onUploadSuccess={(url) => setProfileImage(url)}
+                  onUploadSuccess={(url) => setProfileImage(`${url}?t=${Date.now()}`)}
                 />
               </div>
             </div>
