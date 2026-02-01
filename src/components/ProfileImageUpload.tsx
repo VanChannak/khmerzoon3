@@ -96,11 +96,10 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
   return (
     <>
       <button
-        className="p-2.5 rounded-full bg-background/95 backdrop-blur-sm hover:bg-background hover:scale-110 transition-all shadow-lg border border-border/50"
+        className="p-2 rounded-full bg-background/90 backdrop-blur-sm hover:bg-background hover:scale-110 transition-all shadow-md"
         onClick={() => setIsDialogOpen(true)}
-        aria-label={`Edit ${type} image`}
       >
-        <Camera className="h-5 w-5 text-foreground" />
+        <Camera className="h-5 w-5 text-primary" />
       </button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

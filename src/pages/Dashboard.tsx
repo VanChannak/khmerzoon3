@@ -14,8 +14,6 @@ import { KHQRPaymentDialog } from '@/components/payment/KHQRPaymentDialog';
 import { ProfileImageUpload } from '@/components/ProfileImageUpload';
 import { useWallet } from '@/hooks/useWallet';
 import { NewAddsSection } from '@/components/dashboard/NewAddsSection';
-import { useIsMobile } from '@/hooks/use-mobile';
-
 interface WatchHistory {
   id: string;
   content_id: string;
@@ -76,7 +74,6 @@ const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const { balance: walletBalance, refetch: refetchWallet } = useWallet();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const [watchHistory, setWatchHistory] = useState<WatchHistory[]>([]);
   const [favorites, setFavorites] = useState<FavoriteContent[]>([]);
   const [rentals, setRentals] = useState<RentalContent[]>([]);
@@ -341,9 +338,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background -mt-[88px] sm:-mt-14">
+    <div className="min-h-screen bg-background">
       {/* Facebook-style Cover & Profile Section - Full width, extends behind header */}
-      <div className="w-full relative">
+      <div className="w-full">
         {/* Cover Image - 16:9 aspect ratio, fills behind transparent header */}
         <div className="relative w-full aspect-[16/9] max-h-[50vh]">
           {coverImage ? (
@@ -356,10 +353,10 @@ const Dashboard = () => {
             <div className="w-full h-full bg-gradient-to-br from-primary/40 via-primary/20 to-background" />
           )}
           {/* Cover gradient overlay - 50% from bottom for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none z-10" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 25%, transparent 50%)' }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 25%, transparent 50%)' }} />
           
-          {/* Cover Edit Button - positioned at bottom right of cover image, ABOVE gradient */}
-          <div className="absolute bottom-4 right-4 sm:right-6 z-20">
+          {/* Cover Edit Button - positioned 15px from bottom */}
+          <div className="absolute bottom-[15px] right-3 sm:right-4 z-10">
             <ProfileImageUpload
               type="cover"
               currentImage={coverImage}
