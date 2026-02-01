@@ -341,8 +341,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background pt-14">
       {/* Facebook-style Cover & Profile Section - Full width, below header */}
       <div className="w-full">
-        {/* Cover Image - Full width with proper aspect ratio */}
-        <div className="relative w-full h-[216px] sm:h-[288px] md:h-[384px] lg:h-[432px]">
+        {/* Cover Image - Reduced height, positioned below header */}
+        <div className="relative w-full h-[140px] sm:h-[180px] md:h-[240px] lg:h-[280px]">
           {coverImage ? (
             <img 
               src={coverImage} 
@@ -350,10 +350,10 @@ const Dashboard = () => {
               className="w-full h-full object-cover object-center"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+            <div className="w-full h-full bg-gradient-to-br from-primary/30 via-primary/15 to-background" />
           )}
-          {/* Cover gradient overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          {/* Cover gradient overlay for better text readability - stronger opacity */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent opacity-80" />
           
           {/* Cover Edit Button - positioned 15px from bottom */}
           <div className="absolute bottom-[15px] right-3 sm:right-4">
