@@ -347,7 +347,7 @@ const Dashboard = () => {
             <img 
               src={coverImage} 
               alt="Cover" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
@@ -355,8 +355,8 @@ const Dashboard = () => {
           {/* Cover gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           
-          {/* Cover Edit Button */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+          {/* Cover Edit Button - positioned 15px from bottom */}
+          <div className="absolute bottom-[15px] right-3 sm:right-4">
             <ProfileImageUpload
               type="cover"
               currentImage={coverImage}

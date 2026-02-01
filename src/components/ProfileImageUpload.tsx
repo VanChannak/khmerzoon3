@@ -44,58 +44,50 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
     try {
       setUploading(true);
 
-      // Generate unique filename with consistent naming for overwrite
+      // Convert file to base64 for iDrive E2 upload
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const base64Data = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      // Generate unique filename for iDrive E2
       const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${user.id}/${type}.${fileExt}`;
+      const timestamp = Date.now();
+      const fileName = `user-profiles/${user.id}/${type}-${timestamp}.${fileExt}`;
 
-      // Delete existing file if any (to avoid stale cache)
-      try {
-        await supabase.storage
-          .from('avatars')
-          .remove([fileName]);
-      } catch {
-        // Ignore if file doesn't exist
-      }
+      // Upload to iDrive E2 via edge function
+      const { data, error } = await supabase.functions.invoke('upload-to-idrive', {
+        body: {
+          fileName,
+          fileData: base64Data,
+          bucket: 'user-profiles',
+          contentType: selectedFile.type,
+          storage: 'storage1'
+        }
+      });
 
-      // Upload to Supabase storage (avatars bucket - which exists)
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: true
-        });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Upload failed');
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL with cache buster
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      // Add cache buster to avoid stale images
-      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
+      const publicUrl = data.url;
 
       // Update profile in database
       const column = type === 'profile' ? 'profile_image' : 'cover_image';
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ [column]: urlWithCacheBuster })
+        .update({ [column]: publicUrl })
         .eq('id', user.id);
 
       if (updateError) throw updateError;
 
-      onUploadSuccess(urlWithCacheBuster);
+      onUploadSuccess(publicUrl);
       setIsDialogOpen(false);
       setSelectedFile(null);
       setPreviewUrl('');
       toast.success(`${type === 'profile' ? 'Profile' : 'Cover'} image updated successfully`);
     } catch (error: any) {
       console.error('Upload error:', error);
-      if (error?.message?.includes('Bucket not found')) {
-        toast.error('Storage not configured. Please set up avatars bucket in Supabase.');
-      } else {
-        toast.error('Upload failed. Please try again.');
-      }
+      toast.error(error?.message || 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
