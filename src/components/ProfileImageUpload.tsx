@@ -53,7 +53,7 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
       // Generate unique filename for iDrive E2
       const fileExt = selectedFile.name.split('.').pop();
       const timestamp = Date.now();
-      const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
+      const fileName = `user-profiles/${user.id}/${type}-${timestamp}.${fileExt}`;
 
       // Upload to iDrive E2 via edge function
       const { data, error } = await supabase.functions.invoke('upload-to-idrive', {

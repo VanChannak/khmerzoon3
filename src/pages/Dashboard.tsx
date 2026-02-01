@@ -14,6 +14,8 @@ import { KHQRPaymentDialog } from '@/components/payment/KHQRPaymentDialog';
 import { ProfileImageUpload } from '@/components/ProfileImageUpload';
 import { useWallet } from '@/hooks/useWallet';
 import { NewAddsSection } from '@/components/dashboard/NewAddsSection';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 interface WatchHistory {
   id: string;
   content_id: string;
@@ -74,6 +76,7 @@ const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const { balance: walletBalance, refetch: refetchWallet } = useWallet();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [watchHistory, setWatchHistory] = useState<WatchHistory[]>([]);
   const [favorites, setFavorites] = useState<FavoriteContent[]>([]);
   const [rentals, setRentals] = useState<RentalContent[]>([]);
@@ -338,9 +341,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background -mt-[88px] sm:-mt-14">
       {/* Facebook-style Cover & Profile Section - Full width, extends behind header */}
-      <div className="w-full">
+      <div className="w-full relative">
         {/* Cover Image - 16:9 aspect ratio, fills behind transparent header */}
         <div className="relative w-full aspect-[16/9] max-h-[50vh]">
           {coverImage ? (
@@ -354,15 +357,15 @@ const Dashboard = () => {
           )}
           {/* Cover gradient overlay - 50% from bottom for readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 25%, transparent 50%)' }} />
-          
-          {/* Cover Edit Button - positioned at bottom right corner, always visible */}
-          <div className="absolute bottom-4 right-4 sm:right-6 z-20">
-            <ProfileImageUpload
-              type="cover"
-              currentImage={coverImage}
-              onUploadSuccess={(url) => setCoverImage(`${url}?t=${Date.now()}`)}
-            />
-          </div>
+        </div>
+        
+        {/* Cover Edit Button - positioned at bottom right corner of cover section */}
+        <div className="absolute bottom-20 sm:bottom-24 md:bottom-28 right-4 sm:right-6 z-[60]">
+          <ProfileImageUpload
+            type="cover"
+            currentImage={coverImage}
+            onUploadSuccess={(url) => setCoverImage(`${url}?t=${Date.now()}`)}
+          />
         </div>
 
         {/* Profile Section - Overlapping cover like Facebook */}
