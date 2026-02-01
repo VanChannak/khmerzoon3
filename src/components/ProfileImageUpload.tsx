@@ -50,11 +50,10 @@ export const ProfileImageUpload = ({ type, currentImage, onUploadSuccess }: Prof
         new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
       );
 
-      // Generate unique filename for iDrive E2
+      // Generate unique filename for iDrive E2 (relative to bucket, no bucket prefix)
       const fileExt = selectedFile.name.split('.').pop();
       const timestamp = Date.now();
-      const fileName = `user-profiles/${user.id}/${type}-${timestamp}.${fileExt}`;
-
+      const fileName = `${user.id}/${type}-${timestamp}.${fileExt}`;
       // Upload to iDrive E2 via edge function
       const { data, error } = await supabase.functions.invoke('upload-to-idrive', {
         body: {
