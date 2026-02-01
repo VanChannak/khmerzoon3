@@ -355,8 +355,8 @@ const Dashboard = () => {
           {/* Cover gradient overlay - 50% from bottom for readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" style={{ background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 25%, transparent 50%)' }} />
           
-          {/* Cover Edit Button - positioned 15px from bottom */}
-          <div className="absolute bottom-[15px] right-3 sm:right-4 z-10">
+          {/* Cover Edit Button - positioned at bottom right corner, always visible */}
+          <div className="absolute bottom-4 right-4 sm:right-6 z-20">
             <ProfileImageUpload
               type="cover"
               currentImage={coverImage}
